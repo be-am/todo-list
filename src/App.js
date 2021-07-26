@@ -19,7 +19,7 @@ function App() {
       ,);
       setToDoList(result.data);
 		}
-		fetchData();
+    fetchData();
 	},[]);
 
   // 동적인 값을 계속 변경할 때
@@ -43,8 +43,11 @@ function App() {
 
   const addTask = (userInput) => {
     let copy = [...toDoList];
-    copy = [...copy, { id: toDoList.length + 1, task: userInput, complete: false }];
-    setToDoList(copy);
+    let plusTask = { id: toDoList.length + 1, task: userInput, complete: false };
+    copy = [...copy, plusTask];
+    axios.post(url, plusTask).then(() => {
+      setToDoList(copy);
+    })
   }
 
 
