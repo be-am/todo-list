@@ -7,18 +7,17 @@ import axios from 'axios';
 
 import './App.css';
 
+const url = 'http://localhost:4000/task';
 
 function App() {
   
-  const [ toDoList, setToDoList ] = useState([]);
-  const url = 'http://localhost:4000/task';
+  const [toDoList, setToDoList] = useState([]);
   
   useEffect(() =>{
 		async function fetchData(){
-      const result = await axios.get(url
-      ,);
+      const result = await axios.get(url);
       setToDoList(result.data);
-		}
+		};
     fetchData();
 	},[]);
 
@@ -28,14 +27,23 @@ function App() {
   
 
   const handleToggle = (id) => {
-    let mapped = toDoList.map(task => {
-      return task.id === Number(id) ? { ...task, complete: !task.complete } : { ...task};
-    });
-    setToDoList(mapped);
-  }
+    setToDoList(toDoList.map(elem => {
+      if (elem.id === Number(id)) {
+        axios.put(url+'/'+elem.id,{...elem.task,complete: !elem.complete})
+        return {
+          ...elem,
+          complete: !elem.complete
+        }
+      }
+      return elem;
+    }));
+  };
 
   const handleFilter = () => {
     let filtered = toDoList.filter(task => {
+      if(task.complete){
+        axios.delete(url+'/'+task.id)
+      }
       return !task.complete;
     });
     setToDoList(filtered);

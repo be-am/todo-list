@@ -5,7 +5,7 @@ const ToDoForm = ({ addTask }) => {
     const [ userInput, setUserInput ] = useState('');
 
     const handleChange = (e) => {
-        setUserInput(e.currentTarget.value)
+        setUserInput(e.target.value)
     }
 
     const handleSubmit = (e) => {
