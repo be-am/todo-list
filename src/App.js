@@ -14,7 +14,7 @@ function App() {
   const [toDoList, setToDoList] = useState([]);
   
   useEffect(() =>{
-		async function fetchData(){
+		const fetchData= async () => {
       const result = await axios.get(url);
       setToDoList(result.data);
 		};
@@ -26,36 +26,52 @@ function App() {
   //클래스 컴포넌트의 this.state.toDoList 와 this.setState와 유사함
   
 
-  const handleToggle = (id) => {
-    setToDoList(toDoList.map(elem => {
-      if (elem.id === Number(id)) {
-        axios.put(url+'/'+elem.id,{...elem.task,complete: !elem.complete})
-        return {
-          ...elem,
-          complete: !elem.complete
-        }
-      }
-      return elem;
-    }));
+  const handleToggle = async (id) => {
+    const idx = toDoList.findIndex(elem => elem.id === id);
+    
+    if (idx !== -1) {
+      const { data } = await axios.put(`${url}/${id}`, {
+        ...toDoList[idx],
+        complete: !toDoList[idx].complete
+      });
+      setToDoList([
+        ...toDoList.slice(0, idx),
+        data,
+        ...toDoList.slice(idx + 1, toDoList.length)
+      ]);
+    }
   };
 
-  const handleFilter = () => {
-    let filtered = toDoList.filter(task => {
-      if(task.complete){
-        axios.delete(url+'/'+task.id)
-      }
-      return !task.complete;
-    });
-    setToDoList(filtered);
+  const handleFilter = async () => {
+    const filtered = toDoList.filter(elem => elem.complete);
+    
+    try {
+      await Promise.all(
+        filtered.map(async (elem) => {
+          return await axios.delete(`${url}/${elem.id}`)
+        })
+      );
+      setToDoList(toDoList.filter(elem => !filtered.includes(elem)));
+    } catch(err) {
+      console.error(err);
+      return err;
+    }
   }
 
-  const addTask = (userInput) => {
-    let copy = [...toDoList];
-    let plusTask = { id: toDoList.length + 1, task: userInput, complete: false };
-    copy = [...copy, plusTask];
-    axios.post(url, plusTask).then(() => {
-      setToDoList(copy);
-    })
+
+  const addTask = async (userInput) => {
+    const plusTask = {
+      task: userInput, 
+      complete: false 
+    };
+
+    const res = await axios.post(url, plusTask).catch(err => err);
+    if (res?.data) {
+      setToDoList([
+        ...toDoList,
+        plusTask
+      ]);
+    }
   }
 
 
